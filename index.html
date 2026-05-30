@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ayush Rajak – AI Engineer</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080b12; --bg2: #0d1117; --surface: #161d2e; --surface2: #1e2a3a;
+    --border: rgba(99,179,237,0.12); --border2: rgba(99,179,237,0.22);
+    --accent: #38bdf8; --accent2: #818cf8; --accent3: #34d399;
+    --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+    --mono: 'Space Mono', monospace; --display: 'Syne', sans-serif; --body: 'Inter', sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); overflow-x: hidden; }
+  ::selection { background: rgba(56,189,248,0.25); }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── MOBILE MENU ── */
+  .mobile-menu { display:none; flex-direction:column; position:fixed; top:64px; left:0; right:0; background:rgba(8,11,18,0.98); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:1.5rem 2rem; gap:1.2rem; z-index:99; animation:fadeDown 0.2s ease; }
+  .mobile-menu.open { display:flex; }
+  .mobile-menu a { color:var(--text2); font-family:var(--mono); font-size:14px; text-decoration:none; letter-spacing:0.5px; padding:0.4rem 0; border-bottom:1px solid var(--border); }
+  .mobile-menu a:last-child { border-bottom:none; }
+  .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; background:none; border:none; }
+  .hamburger span { display:block; width:22px; height:2px; background:var(--text2); border-radius:2px; transition:all 0.3s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .nav-links { display:none !important; }
+    .hamburger { display:flex !important; }
+    .hero-btns { flex-direction:column !important; }
+    .hero-btns a { text-align:center; }
+    .metrics-row { gap:24px !important; }
+    .section-pad { padding:4rem 1.2rem !important; }
+    .grid-2 { grid-template-columns:1fr !important; }
+    .projects-grid { grid-template-columns:1fr !important; }
+    .skills-grid { grid-template-columns:1fr !important; }
+    .certs-grid { grid-template-columns:1fr !important; }
+    .contact-btns { flex-direction:column !important; align-items:stretch !important; }
+    .contact-btns a { text-align:center; }
+    .doc-cards { flex-direction:column !important; }
+    .filter-row { gap:6px !important; }
+    .filter-row button { font-size:10px !important; padding:5px 10px !important; }
+  }
+  @media (max-width: 480px) {
+    .metrics-row { grid-template-columns:1fr 1fr !important; display:grid !important; gap:20px !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+const NAV_LINKS = ['About','Skills','Projects','Experience','Certifications','Contact'];
+
+function useInView(threshold=0.12) {
+  const ref = useRef(null);
+  const [vis, setVis] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) setVis(true); }, { threshold });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, vis];
+}
+
+function FadeIn({ children, delay=0, style={} }) {
+  const [ref, vis] = useInView();
+  return (
+    <div ref={ref} style={{ opacity:vis?1:0, transform:vis?'translateY(0)':'translateY(28px)', transition:`opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`, ...style }}>
+      {children}
+    </div>
+  );
+}
+
+function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', h);
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  const close = () => setOpen(false);
+  return (
+    <>
+      <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, background:scrolled||open?'rgba(8,11,18,0.95)':'transparent', backdropFilter:scrolled||open?'blur(12px)':'none', borderBottom:scrolled?'1px solid var(--border)':'1px solid transparent', transition:'all 0.3s ease', padding:'0 1.5rem' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
+          <span style={{ fontFamily:'var(--mono)', color:'var(--accent)', fontSize:15, fontWeight:700, letterSpacing:1 }}>AR.</span>
+          <div className="nav-links" style={{ display:'flex', gap:'1.8rem', alignItems:'center' }}>
+            {NAV_LINKS.map(l => (
+              <a key={l} href={`#${l.toLowerCase()}`} style={{ color:'var(--text2)', fontSize:13, fontFamily:'var(--mono)', letterSpacing:0.5, textDecoration:'none', transition:'color 0.2s' }}
+                onMouseEnter={e=>e.target.style.color='var(--accent)'} onMouseLeave={e=>e.target.style.color='var(--text2)'}>{l}</a>
+            ))}
+            <a href="https://mail.google.com/mail/?view=cm&to=rajakayuush@gmail.com" target="_blank"
+              style={{ fontFamily:'var(--mono)', fontSize:12, color:'var(--accent)', border:'1px solid var(--accent)', padding:'6px 14px', borderRadius:4, textDecoration:'none', transition:'all 0.2s' }}
+              onMouseEnter={e=>{e.target.style.background='var(--accent)';e.target.style.color='var(--bg)'}}
+              onMouseLeave={e=>{e.target.style.background='transparent';e.target.style.color='var(--accent)'}}>Hire Me</a>
+          </div>
+          <button className="hamburger" onClick={() => setOpen(o=>!o)} aria-label="Menu">
+            <span style={{ transform:open?'rotate(45deg) translate(5px,5px)':'none' }}/>
+            <span style={{ opacity:open?0:1 }}/>
+            <span style={{ transform:open?'rotate(-45deg) translate(5px,-5px)':'none' }}/>
+          </button>
+        </div>
+      </nav>
+      <div className={`mobile-menu ${open?'open':''}`}>
+        {NAV_LINKS.map(l => <a key={l} href={`#${l.toLowerCase()}`} onClick={close}>{l}</a>)}
+        <a href="https://mail.google.com/mail/?view=cm&to=rajakayuush@gmail.com" target="_blank" onClick={close}
+          style={{ color:'var(--accent)', fontFamily:'var(--mono)', fontSize:14, textDecoration:'none', padding:'0.4rem 0' }}>✉ Hire Me</a>
+      </div>
+    </>
+  );
+}
+
+function Hero() {
+  const [typed, setTyped] = useState('');
+  const roles = ['AI Engineer','RAG Systems Builder','LLM App Developer','GenAI Engineer'];
+  const [ri, setRi] = useState(0);
+  useEffect(() => {
+    let i=0, dir=1, timeout;
+    const tick = () => {
+      const word = roles[ri];
+      if(dir===1){ i++; setTyped(word.slice(0,i)); if(i===word.length){dir=-1;timeout=setTimeout(tick,1800);return;} }
+      else { i--; setTyped(word.slice(0,i)); if(i===0){dir=1;setRi(r=>(r+1)%roles.length);return;} }
+      timeout=setTimeout(tick,dir===1?80:45);
+    };
+    timeout=setTimeout(tick,120);
+    return()=>clearTimeout(timeout);
+  },[ri]);
+
+  return (
+    <section style={{ minHeight:'100vh', display:'flex', alignItems:'center', position:'relative', overflow:'hidden', padding:'6rem 1.5rem 4rem' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(99,179,237,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(99,179,237,0.04) 1px,transparent 1px)', backgroundSize:'60px 60px', pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', top:'15%', left:'5%', width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle,rgba(56,189,248,0.08) 0%,transparent 70%)', pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', bottom:'20%', right:'3%', width:250, height:250, borderRadius:'50%', background:'radial-gradient(circle,rgba(129,140,248,0.07) 0%,transparent 70%)', pointerEvents:'none' }}/>
+      <div style={{ maxWidth:1100, margin:'0 auto', width:'100%' }}>
+        <div style={{ fontFamily:'var(--mono)', color:'var(--accent)', fontSize:13, letterSpacing:2, marginBottom:20, opacity:0.8 }}>&gt; Hello, World! I am</div>
+        <h1 style={{ fontFamily:'var(--display)', fontSize:'clamp(2.8rem,10vw,6.5rem)', fontWeight:800, lineHeight:1.05, letterSpacing:-2, marginBottom:16 }}>
+          <span style={{ color:'var(--text)' }}>Ayush</span><br/>
+          <span style={{ WebkitTextStroke:'1px var(--accent)', color:'transparent' }}>Rajak</span>
+        </h1>
+        <div style={{ fontFamily:'var(--mono)', fontSize:'clamp(0.85rem,3vw,1.4rem)', color:'var(--accent2)', marginBottom:24, minHeight:32, display:'flex', alignItems:'center', gap:4, flexWrap:'wrap' }}>
+          <span style={{ color:'var(--text3)' }}>//</span>
+          <span>{typed}</span>
+          <span style={{ borderLeft:'2px solid var(--accent)', height:'1.2em', animation:'blink 1s step-end infinite' }}/>
+        </div>
+        <p style={{ color:'var(--text2)', fontSize:'clamp(14px,2vw,16px)', maxWidth:560, lineHeight:1.8, marginBottom:36 }}>
+          Building production-grade AI systems — RAG pipelines, LLM applications, and agentic workflows. Final-year CSE student at Rungta College, Bhilai, targeting GenAI Engineer roles.
+        </p>
+        <div className="hero-btns" style={{ display:'flex', gap:12, flexWrap:'wrap', alignItems:'center' }}>
+          <a href="#projects" style={{ fontFamily:'var(--mono)', fontSize:13, background:'var(--accent)', color:'var(--bg)', padding:'12px 24px', borderRadius:4, textDecoration:'none', fontWeight:700, letterSpacing:0.5, transition:'all 0.2s' }}
+            onMouseEnter={e=>e.target.style.opacity=0.85} onMouseLeave={e=>e.target.style.opacity=1}>View Projects →</a>
+          <a href="https://github.com/ayushRajak19" target="_blank" style={{ fontFamily:'var(--mono)', fontSize:13, color:'var(--text2)', border:'1px solid var(--border2)', padding:'12px 24px', borderRadius:4, textDecoration:'none', transition:'all 0.2s' }}
+            onMouseEnter={e=>{e.target.style.borderColor='var(--accent)';e.target.style.color='var(--accent)'}} onMouseLeave={e=>{e.target.style.borderColor='var(--border2)';e.target.style.color='var(--text2)'}}>GitHub ↗</a>
+          <a href="https://linkedin.com/in/ayushrajak09" target="_blank" style={{ fontFamily:'var(--mono)', fontSize:13, color:'var(--text2)', border:'1px solid var(--border2)', padding:'12px 24px', borderRadius:4, textDecoration:'none', transition:'all 0.2s' }}
+            onMouseEnter={e=>{e.target.style.borderColor='var(--accent2)';e.target.style.color='var(--accent2)'}} onMouseLeave={e=>{e.target.style.borderColor='var(--border2)';e.target.style.color='var(--text2)'}}>LinkedIn ↗</a>
+        </div>
+        <div className="metrics-row" style={{ display:'flex', gap:32, marginTop:56, flexWrap:'wrap' }}>
+          {[['6+','AI Projects Built'],['90%+','RAG Answer Relevance'],['85%+','Hallucination Reduction'],['1','Live Client Site']].map(([n,l]) => (
+            <div key={l}>
+              <div style={{ fontFamily:'var(--display)', fontSize:'clamp(22px,5vw,28px)', fontWeight:800, color:'var(--accent)', lineHeight:1 }}>{n}</div>
+              <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text3)', marginTop:4, letterSpacing:0.5 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function About() {
+  return (
+    <section id="about" className="section-pad" style={{ padding:'7rem 2rem', background:'var(--bg2)' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <FadeIn>
+          <div style={{ fontFamily:'var(--mono)', color:'var(--accent)', fontSize:12, letterSpacing:3, marginBottom:12, textTransform:'uppercase' }}>01. About</div>
+          <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(1.8rem,4vw,3rem)', fontWeight:800, marginBottom:40 }}>Who I Am</h2>
+        </FadeIn>
+        <div className="grid-2" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))', gap:40 }}>
+          <FadeIn delay={0.1}>
+            <p style={{ color:'var(--text2)', lineHeight:1.9, fontSize:15, marginBottom:20 }}>I'm a final-year Computer Science & Engineering student at Rungta College of Engineering and Technology, Bhilai (CSVTU), specializing in Generative AI engineering.</p>
+            <p style={{ color:'var(--text2)', lineHeight:1.9, fontSize:15, marginBottom:20 }}>My focus is on building production-grade AI systems, including RAG pipelines, multi-agent frameworks, and LLM-powered applications that solve real-world problems efficiently and at scale..</p>
+            <p style={{ color:'var(--text2)', lineHeight:1.9, fontSize:15 }}>Beyond AI, I've delivered a live production website for a real client, explored SaaS concepts for the local market, and participated in national-level hackathons.</p>
+          </FadeIn>
+          <FadeIn delay={0.2}>
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              {[['📍','Location','Bhilai, Chhattisgarh, India'],['🎓','University','Rungta College of Engineering & Technology (CSVTU)'],['📅','Graduation','May 2026 (Expected)'],['📊','CGPA','7.5 / 10.0'],['📧','Email','rajakayuush@gmail.com'],['🔗','GitHub','github.com/ayushRajak19']].map(([icon,label,val]) => (
+                <div key={label} style={{ display:'flex', gap:14, alignItems:'flex-start' }}>
+                  <span style={{ fontSize:18, flexShrink:0, marginTop:1 }}>{icon}</span>
+                  <div>
+                    <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--accent)', letterSpacing:1, marginBottom:2 }}>{label}</div>
+                    <div style={{ color:'var(--text)', fontSize:14 }}>{val}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const SKILLS = {
+  'Generative AI & LLMs':{ color:'#38bdf8', items:['LangChain','LlamaIndex','CrewAI','AutoGen','Ollama','MCP','Prompt Engineering','RAG'] },
+  'Vector Databases':{ color:'#818cf8', items:['FAISS','ChromaDB','Embeddings','Semantic Search'] },
+  'AI Automation':{ color:'#f472b6', items:['n8n','Zapier','Distilled Birt','REST APIs','Agentic Workflows'] },
+  'Machine Learning':{ color:'#34d399', items:['Scikit-learn','TensorFlow','PyTorch','HuggingFace','Transformers','NLP','NumPy','Pandas'] },
+  'Backend & Databases':{ color:'#fb923c', items:['FastAPI','MongoDB','MySQL','PostgreSQL','Pydantic','Docker','JWT'] },
+  'Cloud & DevOps':{ color:'#facc15', items:['AWS (EC2, S3)','Git','Linux','Docker'] },
+  'Frontend':{ color:'#a78bfa', items:['React.js','Tailwind CSS','HTML5','CSS3','JavaScript','Vite'] },
+  'Languages':{ color:'#4ade80', items:['Python','JavaScript','SQL','Java'] },
+};
+
+function Skills() {
+  const [active, setActive] = useState(null);
+  return (
+    <section id="skills" className="section-pad" style={{ padding:'7rem 2rem', background:'var(--bg)' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <FadeIn>
+          <div style={{ fontFamily:'var(--mono)', color:'var(--accent)', fontSize:12, letterSpacing:3, marginBottom:12, textTransform:'uppercase' }}>02. Skills</div>
+          <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(1.8rem,4vw,3rem)', fontWeight:800, marginBottom:40 }}>Technical Stack</h2>
+        </FadeIn>
+        <div className="skills-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))', gap:16 }}>
+          {Object.entries(SKILLS).map(([cat,{color,items}],ci) => (
+            <FadeIn key={cat} delay={ci*0.06}>
+              <div onClick={()=>setActive(active===cat?null:cat)}
+                style={{ background:'var(--surface)', border:`1px solid ${active===cat?color:'var(--border)'}`, borderRadius:8, padding:18, cursor:'pointer', transition:'all 0.3s', boxShadow:active===cat?`0 0 24px ${color}18`:'none' }}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=color}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=active===cat?color:'var(--border)'}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                  <span style={{ fontFamily:'var(--mono)', fontSize:11, color, letterSpacing:0.5, fontWeight:700 }}>{cat}</span>
+                  <span style={{ color:'var(--text3)', fontSize:10, fontFamily:'var(--mono)' }}>{items.length}</span>
+                </div>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                  {items.map(skill => (
+                    <span key={skill} style={{ fontFamily:'var(--mono)', fontSize:10, padding:'4px 8px', background:`${color}12`, color, borderRadius:4, border:`1px solid ${color}30`, letterSpacing:0.3 }}>{skill}</span>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const PROJECTS = [
+  { name:'AstraLearn', tag:'RAG System', color:'#38bdf8', desc:'End-to-end RAG pipeline enabling natural language querying of PDF documents. 4-stage ingestion engine with chunking, embedding, vector indexing, and top-k retrieval.', metrics:['90%+ Answer Relevance','85% Hallucination Reduction'], stack:['Python','LangChain','FAISS','ChromaDB','LLM APIs'], link:'https://github.com/ayushRajak19/AstraLearn', featured:true },
+  { name:'Aura', tag:'AI + AR', color:'#818cf8', desc:'RAG-powered AI Stylist chatbot with AR jewelry try-on. Real-time virtual fitting using MediaPipe and HTML5 Canvas on a FastAPI async backend.', metrics:['Real-Time AR Try-On','Natural Language Queries'], stack:['FastAPI','LangChain','FAISS','OpenCV','MediaPipe','MongoDB'], link:'https://github.com/ayushRajak19/jewellery-tryon', featured:true },
+  { name:'ConvoPro-GenAI', tag:'Chatbot', color:'#34d399', desc:'Multi-turn conversational AI with persistent MongoDB session management and Ollama local inference. Production-grade memory and context management.', metrics:['Multi-Turn Context','Local LLM Inference'], stack:['Python','LangChain','MongoDB','Ollama','FastAPI'], link:'https://github.com/ayushRajak19', featured:false },
+  { name:'Repo Copilot', tag:'Agentic AI', color:'#fb923c', desc:'RAG system over GitHub codebases. Semantic code search and natural language Q&A over entire repositories using LlamaIndex and ChromaDB.', metrics:['Codebase RAG','Semantic Code Search'], stack:['LlamaIndex','ChromaDB','Groq LLM','FastAPI'], link:'https://github.com/ayushRajak19', featured:false },
+  { name:'AstraRAG', tag:'Multi-Agent', color:'#f472b6', desc:'Multi-agent AI system built with CrewAI and FastAPI. Agents collaborate on complex tasks with specialized roles and shared context.', metrics:['Multi-Agent Orchestration','CrewAI Framework'], stack:['CrewAI','FastAPI','Python','LangChain'], link:'https://github.com/ayushRajak19', featured:false },
+  { name:'EmotiSense', tag:'Computer Vision', color:'#facc15', desc:'CNN-based real-time facial emotion classifier trained on FER-2013. Detects 7 emotions via webcam using Haar Cascade and Keras inference pipeline.', metrics:['7 Emotion Classes','Real-Time Webcam'], stack:['TensorFlow','Keras','OpenCV','FastAPI','NumPy'], link:'https://github.com/ayushRajak19/emotion_detection', featured:false },
+];
+
+function Projects() {
+  const [filter, setFilter] = useState('All');
+  const tags = ['All','RAG System','AI + AR','Chatbot','Agentic AI','Multi-Agent','Computer Vision'];
+  const filtered = filter==='All'?PROJECTS:PROJECTS.filter(p=>p.tag===filter);
+  return (
+    <section id="projects" className="section-pad" style={{ padding:'7rem 2rem', background:'var(--bg2)' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <FadeIn>
+          <div style={{ fontFamily:'var(--mono)', color:'var(--accent)', fontSize:12, letterSpacing:3, marginBottom:12, textTransform:'uppercase' }}>03. Projects</div>
+          <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(1.8rem,4vw,3rem)', fontWeight:800, marginBottom:28 }}>What I've Built</h2>
+          <div className="filter-row" style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:36, overflowX:'auto', paddingBottom:4 }}>
+            {tags.map(t => (
+              <button key={t} onClick={()=>setFilter(t)} style={{ fontFamily:'var(--mono)', fontSize:11, padding:'6px 12px', borderRadius:4, cursor:'pointer', border:filter===t?'1px solid var(--accent)':'1px solid var(--border)', background:filter===t?'rgba(56,189,248,0.12)':'transparent', color:filter===t?'var(--accent)':'var(--text3)', transition:'all 0.2s', letterSpacing:0.5, whiteSpace:'nowrap' }}>{t}</button>
+            ))}
+          </div>
+        </FadeIn>
+        <div className="projects-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:20 }}>
+          {filtered.map((p,i) => (
+            <FadeIn key={p.name} delay={i*0.07}>
+              <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, padding:24, height:'100%', transition:'all 0.3s', position:'relative', overflow:'hidden' }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor=p.color;e.currentTarget.style.transform='translateY(-4px)';e.currentTarget.style.boxShadow=`0 16px 40px ${p.color}15`;}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='none';}}>
+                {p.featured && <div style={{ position:'absolute', top:14, right:14, fontFamily:'var(--mono)', fontSize:9, color:p.color, border:`1px solid ${p.color}`, padding:'3px 7px', borderRadius:3, letterSpacing:1 }}>FEATURED</div>}
+                <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
+                  <div style={{ width:38, height:38, borderRadius:8, background:`${p.color}18`, border:`1px solid ${p.color}30`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <span style={{ fontFamily:'var(--mono)', fontSize:11, color:p.color, fontWeight:700 }}>{p.name.slice(0,2).toUpperCase()}</span>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily:'var(--display)', fontWeight:700, fontSize:16, color:'var(--text)' }}>{p.name}</div>
+                    <div style={{ fontFamily:'var(--mono)', fontSize:10, color:p.color, letterSpacing:1 }}>{p.tag}</div>
+                  </div>
+                </div>
+                <p style={{ color:'var(--text2)', fontSize:13, lineHeight:1.75, marginBottom:14 }}>{p.desc}</p>
+                <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:12 }}>
+                  {p.metrics.map(m => <span key={m} style={{ fontFamily:'var(--mono)', fontSize:10, padding:'3px 7px', background:`${p.color}10`, color:p.color, borderRadius:3, border:`1px solid ${p.color}20` }}>{m}</span>)}
+                </div>
+                <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:18 }}>
+                  {p.stack.map(s => <span key={s} style={{ fontFamily:'var(--mono)', fontSize:10, padding:'3px 7px', background:'var(--surface2)', color:'var(--text3)', borderRadius:3 }}>{s}</span>)}
+                </div>
+                <a href={p.link} target="_blank" style={{ fontFamily:'var(--mono)', fontSize:12, color:p.color, textDecoration:'none', display:'flex', alignItems:'center', gap:6, transition:'gap 0.2s' }}
+                  onMouseEnter={e=>e.currentTarget.style.gap='10px'} onMouseLeave={e=>e.currentTarget.style.gap='6px'}>View on GitHub →</a>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Experience() {
+  return (
+    <section id="experience" className="section-pad" style={{ padding:'7rem 2rem', background:'var(--bg)' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <FadeIn>
+          <div style={{ fontFamily:'var(--mono)', color:'var(--accent)', fontSize:12, letterSpacing:3, marginBottom:12, textTransform:'uppercase' }}>04. Experience</div>
+          <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(1.8rem,4vw,3rem)', fontWeight:800, marginBottom:40 }}>Work & Education</h2>
+        </FadeIn>
+        <div className="grid-2" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))', gap:24 }}>
+          <FadeIn delay={0.1}>
+            <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, padding:24, borderTop:'3px solid var(--accent)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+                <div>
+                  <div style={{ fontFamily:'var(--display)', fontWeight:700, fontSize:17, color:'var(--text)', marginBottom:4 }}>Freelance Web Developer</div>
+                  <div style={{ fontFamily:'var(--mono)', fontSize:12, color:'var(--accent)', marginBottom:8 }}>Right Power Cables Pvt. Ltd.</div>
+                </div>
+                <span style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--text3)', border:'1px solid var(--border)', padding:'4px 8px', borderRadius:4, whiteSpace:'nowrap', marginLeft:8 }}>2025</span>
+              </div>
+              <ul style={{ color:'var(--text2)', fontSize:13.5, lineHeight:1.8, paddingLeft:0, listStyle:'none' }}>
+                {['Sole developer for official production website — rightpowercables.com','Fully responsive, mobile-first design with 100% cross-device compatibility','Managed complete 5-phase project lifecycle from requirements to deployment','Received formal written client appreciation upon delivery'].map(b => (
+                  <li key={b} style={{ display:'flex', gap:10, marginBottom:8 }}><span style={{ color:'var(--accent)', flexShrink:0 }}>▸</span>{b}</li>
+                ))}
+              </ul>
+              <div style={{ marginTop:14, display:'flex', gap:8, flexWrap:'wrap' }}>
+                {['React.js','Vite','Tailwind CSS','JavaScript','GoDaddy'].map(t => (
+                  <span key={t} style={{ fontFamily:'var(--mono)', fontSize:10, padding:'3px 8px', background:'var(--surface2)', color:'var(--text3)', borderRadius:3 }}>{t}</span>
+                ))}
+              </div>
+              <a href="https://rightpowercables.com" target="_blank" style={{ display:'inline-block', marginTop:14, fontFamily:'var(--mono)', fontSize:12, color:'var(--accent)', textDecoration:'none' }}>Live Site ↗</a>
+
+              {/* Document Cards */}
+              <div style={{ marginTop:22, borderTop:'1px solid var(--border)', paddingTop:18 }}>
+                <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text3)', letterSpacing:1, textTransform:'uppercase', marginBottom:12 }}>Official Documents</div>
+                <div className="doc-cards" style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
+                  <a href="/docs/appointment-letter.pdf" target="_blank"
+                    style={{ display:'flex', alignItems:'center', gap:10, background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:8, padding:'10px 14px', textDecoration:'none', flex:1, minWidth:180, transition:'all 0.2s' }}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--accent)';e.currentTarget.style.transform='translateY(-2px)';}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.transform='translateY(0)';}}>
+                    <span style={{ fontSize:22, flexShrink:0 }}>📄</span>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ color:'var(--text)', fontSize:13, fontWeight:500, marginBottom:3 }}>Appointment Letter</div>
+                      <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--accent)' }}>RPC Pvt. Ltd.</div>
+                    </div>
+                    <span style={{ color:'var(--text3)', fontSize:14, flexShrink:0 }}>↗</span>
+                  </a>
+                  <a href="/docs/completion-certificate.pdf" target="_blank"
+                    style={{ display:'flex', alignItems:'center', gap:10, background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:8, padding:'10px 14px', textDecoration:'none', flex:1, minWidth:180, transition:'all 0.2s' }}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--accent3)';e.currentTarget.style.transform='translateY(-2px)';}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.transform='translateY(0)';}}>
+                    <span style={{ fontSize:22, flexShrink:0 }}>🏆</span>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ color:'var(--text)', fontSize:13, fontWeight:500, marginBottom:3 }}>Completion Certificate</div>
+                      <div style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--accent3)' }}>Delivered Successfully</div>
+                    </div>
+                    <span style={{ color:'var(--text3)', fontSize:14, flexShrink:0 }}>↗</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.2}>
+            <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, padding:24, borderTop:'3px solid var(--accent2)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+                <div>
+                  <div style={{ fontFamily:'var(--display)', fontWeight:700, fontSize:17, color:'var(--text)', marginBottom:4 }}>B.Tech – CSE</div>
+                  <div style={{ fontFamily:'var(--mono)', fontSize:12, color:'var(--accent2)', marginBottom:8 }}>Rungta College of Engineering & Technology</div>
+                </div>
+                <span style={{ fontFamily:'var(--mono)', fontSize:10, color:'var(--text3)', border:'1px solid var(--border)', padding:'4px 8px', borderRadius:4, whiteSpace:'nowrap', marginLeft:8 }}>2022–26</span>
+              </div>
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text3)', marginBottom:6 }}>CGPA</div>
+                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                  <div style={{ flex:1, height:4, background:'var(--surface2)', borderRadius:2, overflow:'hidden' }}>
+                    <div style={{ width:'75%', height:'100%', background:'linear-gradient(90deg,var(--accent2),var(--accent))', borderRadius:2 }}/>
+                  </div>
+                  <span style={{ fontFamily:'var(--mono)', fontSize:13, color:'var(--accent2)', fontWeight:700, whiteSpace:'nowrap' }}>7.5 / 10</span>
+                </div>
+              </div>
+              <div style={{ color:'var(--text2)', fontSize:13, lineHeight:1.8, marginBottom:16 }}>
+                Coursework: Data Structures & Algorithms, DBMS, Machine Learning, Cloud Computing, OS, Computer Networks
+              </div>
+              <div>
+                <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text3)', marginBottom:8 }}>Hackathons</div>
+                {['HackIndia Hackathon 2024','Hack for Impact 2024','Design-A-Thon Hackathon'].map(h => (
+                  <div key={h} style={{ display:'flex', gap:10, marginBottom:6, color:'var(--text2)', fontSize:13 }}><span style={{ color:'var(--accent2)' }}>▸</span>{h}</div>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const CERTS = [
+  { name:'AWS Cloud Practitioner Essentials', issuer:'Amazon Web Services', color:'#fb923c', icon:'☁️' },
+  { name:'MongoDB Developer Certification', issuer:'MongoDB University', color:'#34d399', icon:'🍃' },
+  { name:'Data Analytics Job Simulation', issuer:'Deloitte', color:'#38bdf8', icon:'📊' },
+  { name:'Postman API Student Expert', issuer:'Postman', color:'#f472b6', icon:'📮' },
+  { name:'Front-End Web Development', issuer:'Great Learning', color:'#818cf8', icon:'🌐' },
+  { name:'MySQL Certification', issuer:'MySQL', color:'#facc15', icon:'🗄️' },
+];
+
+function Certifications() {
+  return (
+    <section id="certifications" className="section-pad" style={{ padding:'7rem 2rem', background:'var(--bg2)' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <FadeIn>
+          <div style={{ fontFamily:'var(--mono)', color:'var(--accent)', fontSize:12, letterSpacing:3, marginBottom:12, textTransform:'uppercase' }}>05. Certifications</div>
+          <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(1.8rem,4vw,3rem)', fontWeight:800, marginBottom:40 }}>Credentials</h2>
+        </FadeIn>
+        <div className="certs-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:16 }}>
+          {CERTS.map((c,i) => (
+            <FadeIn key={c.name} delay={i*0.08}>
+              <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, padding:'18px 20px', display:'flex', alignItems:'center', gap:14, transition:'all 0.3s', borderLeft:`3px solid ${c.color}` }}
+                onMouseEnter={e=>{e.currentTarget.style.transform='translateX(4px)';e.currentTarget.style.borderColor=c.color;}}
+                onMouseLeave={e=>{e.currentTarget.style.transform='translateX(0)';e.currentTarget.style.borderLeftColor=c.color;e.currentTarget.style.borderTopColor='var(--border)';e.currentTarget.style.borderRightColor='var(--border)';e.currentTarget.style.borderBottomColor='var(--border)';}}>
+                <div style={{ fontSize:26, flexShrink:0 }}>{c.icon}</div>
+                <div>
+                  <div style={{ fontFamily:'var(--body)', fontSize:13, fontWeight:500, color:'var(--text)', marginBottom:4, lineHeight:1.3 }}>{c.name}</div>
+                  <div style={{ fontFamily:'var(--mono)', fontSize:11, color:c.color }}>{c.issuer}</div>
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Contact() {
+  return (
+    <section id="contact" className="section-pad" style={{ padding:'7rem 2rem', background:'var(--bg)', position:'relative', overflow:'hidden' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(99,179,237,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,179,237,0.03) 1px,transparent 1px)', backgroundSize:'60px 60px', pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'min(600px,90vw)', height:'min(600px,90vw)', borderRadius:'50%', background:'radial-gradient(circle,rgba(56,189,248,0.05) 0%,transparent 70%)', pointerEvents:'none' }}/>
+      <div style={{ maxWidth:700, margin:'0 auto', textAlign:'center', position:'relative' }}>
+        <FadeIn>
+          <div style={{ fontFamily:'var(--mono)', color:'var(--accent)', fontSize:12, letterSpacing:3, marginBottom:12, textTransform:'uppercase' }}>06. Contact</div>
+          <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(1.8rem,5vw,3.5rem)', fontWeight:800, marginBottom:20 }}>Let's Build Something</h2>
+          <p style={{ color:'var(--text2)', fontSize:'clamp(14px,2vw,16px)', lineHeight:1.8, marginBottom:40 }}>
+            Actively seeking GenAI Engineer & AI/ML roles. Open to startups, product companies, and full-time positions. Let's connect.
+          </p>
+          <div className="contact-btns" style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap', marginBottom:48 }}>
+            <a href="https://mail.google.com/mail/?view=cm&to=rajakayuush@gmail.com" target="_blank"
+              style={{ fontFamily:'var(--mono)', fontSize:13, background:'var(--accent)', color:'var(--bg)', padding:'14px 28px', borderRadius:4, textDecoration:'none', fontWeight:700, transition:'opacity 0.2s' }}
+              onMouseEnter={e=>e.target.style.opacity=0.85} onMouseLeave={e=>e.target.style.opacity=1}>Send Email ✉️</a>
+            <a href="https://linkedin.com/in/ayushrajak09" target="_blank"
+              style={{ fontFamily:'var(--mono)', fontSize:13, color:'var(--accent2)', border:'1px solid var(--accent2)', padding:'14px 28px', borderRadius:4, textDecoration:'none', transition:'all 0.2s' }}
+              onMouseEnter={e=>{e.target.style.background='rgba(129,140,248,0.12)'}} onMouseLeave={e=>{e.target.style.background='transparent'}}>LinkedIn ↗</a>
+            <a href="https://github.com/ayushRajak19" target="_blank"
+              style={{ fontFamily:'var(--mono)', fontSize:13, color:'var(--text2)', border:'1px solid var(--border2)', padding:'14px 28px', borderRadius:4, textDecoration:'none', transition:'all 0.2s' }}
+              onMouseEnter={e=>{e.target.style.borderColor='var(--accent)';e.target.style.color='var(--accent)'}} onMouseLeave={e=>{e.target.style.borderColor='var(--border2)';e.target.style.color='var(--text2)'}}>GitHub ↗</a>
+          </div>
+          <div style={{ borderTop:'1px solid var(--border)', paddingTop:28, color:'var(--text3)', fontFamily:'var(--mono)', fontSize:12 }}>
+             Ayush Rajak · Bhilai,Chhattisgarh, India
+          </div>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  return (
+    <>
+      <Navbar/>
+      <Hero/>
+      <About/>
+      <Skills/>
+      <Projects/>
+      <Experience/>
+      <Certifications/>
+      <Contact/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
